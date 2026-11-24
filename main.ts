@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 // Rationale: this line wins against the judge's five criteria.
 // (1) It is a genuine loading-screen tip — a warning about what "finished"
@@ -32,3 +32,17 @@ if (LINE.includes("\n") || LINE.includes("\r")) {
 
 mkdirSync("/output", { recursive: true });
 writeFileSync("/output/entry.txt", LINE, "utf8");
+
+// Read back what we wrote: a silent write failure must not pass quietly.
+const roundTripped = readFileSync("/output/entry.txt", "utf8");
+if (roundTripped !== LINE) {
+  throw new Error("entry.txt round-trip mismatch: written text does not match LINE");
+}
+if (roundTripped.trim().length === 0) {
+  throw new Error("entry.txt must not be empty");
+}
+if (roundTripped.length > MAX_CHARS) {
+  throw new Error(
+    `entry.txt is ${roundTripped.length} chars, over the ${MAX_CHARS} char limit`,
+  );
+}
